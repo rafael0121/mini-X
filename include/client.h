@@ -1,15 +1,11 @@
-#ifndef HANDSOCKET_H_
-#define HANDSOCKET_H_
+#ifndef CLIENT_H_
+#define CLIENT_H_
 
 /*============================================================================*
  * Public Functions                                                           *
  *============================================================================*/
 
-    // Open a socket.
-    extern int open_socket();
-
-    // Close a socket.
-    extern int close_socket(int);
+    // Connect to the server.
+    extern int connect_server(int);
 
 #endif
-
