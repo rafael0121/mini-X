@@ -4,7 +4,8 @@
 
 #include <stdio.h>
 #include <sys/socket.h>
-#include <handsocket.h>
+#include <handlesocket.h>
+#include <handleaccept.h>
 #include <server.h>
 #include <errno.h>
 #include <netinet/ip.h>
@@ -153,10 +154,12 @@ int main()
     }
 
     while(1) {
-        ret = accept_connection(sockfd);
-        if (ret < 0) {
+        int client_sock = accept_connection(sockfd);
+        if (client_sock < 0) {
             return -1;
         }
+
+        handle_accept(client_sock);
    }
 
     ret = close_socket(sockfd);

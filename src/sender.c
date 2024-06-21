@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <sys/socket.h>
-#include <handsocket.h>
+#include <handlesocket.h>
 #include <server.h>
 #include <client.h>
 #include <msg.h>
@@ -13,7 +13,7 @@
  * Main Function                                                              *
  *============================================================================*/
 
-int main ()
+int main()
 {
     int ret = 0;
 
