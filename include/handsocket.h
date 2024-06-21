@@ -1,9 +1,19 @@
-#ifndef SERVER_H_
-#define SERVER_H_
+#ifndef HANDSOCKET_H_
+#define HANDSOCKET_H_
 
-    #define SERVER_TIMEOUT 5
-    #define SERVER_PORT 50234
+/*============================================================================*
+ * Constants                                                                  *
+ *============================================================================*/
+
+    // Max clients waiting for accept connection.
     #define MAX_QUEUE 20
+
+    // Default timeout for close a connection.
+    #define CONNECTION_TIMEOUT 5
+
+/*============================================================================*
+ * Public Functions                                                           *
+ *============================================================================*/
 
     // Open a socket.
     extern int open_socket();
@@ -16,7 +26,7 @@
     extern int settimeout_socket(int);
 
     // Bind a socket to a adress.
-    extern int setaddr_socket(int);
+    extern int setaddr_socket(int, int);
 
     // Set a socket to accept connections.
     int listen_socket(int);

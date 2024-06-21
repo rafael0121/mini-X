@@ -1,3 +1,7 @@
+/*============================================================================*
+ * Imports                                                                    *
+ *============================================================================*/
+
 #include <handsocket.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -5,6 +9,10 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+
+/*============================================================================*
+ * Private Functions                                                          *
+ *============================================================================*/
 
 /**
  * @brief Open socket using default values.
@@ -51,7 +59,7 @@ int settimeout_socket(int sockfd) {
     struct linger opt;
 
     opt.l_onoff = 1;
-    opt.l_linger = SERVER_TIMEOUT;
+    opt.l_linger = CONNECTION_TIMEOUT;
 
     // Set socket timeout. 
     int ret = setsockopt(sockfd, SOL_SOCKET, SO_LINGER,
@@ -70,14 +78,14 @@ int settimeout_socket(int sockfd) {
  * @return Upon succesfull zero is returned. otherwise
  * a negative errno.
  */
-int setaddr_socket(int sockfd) {
+int setaddr_socket(int sockfd, int port) {
 
     struct sockaddr_in addr;
 
     memset(&addr, 0, sizeof(addr));
 
     addr.sin_family = AF_INET;
-    addr.sin_port = SERVER_PORT;
+    addr.sin_port = port;
     addr.sin_addr.s_addr = INADDR_ANY;
 
     // Bind the addres to the socket.
@@ -107,7 +115,14 @@ int listen_socket(int sockfd) {
         printf("\n ### ERROR: Failed to set socket to listen. errno: %i \n", errno);
     }
 
-    printf("\n Listening in %i\n", SERVER_PORT);
+    struct sockaddr_in addr;
+    socklen_t len = sizeof(addr);
+
+    if (getsockname(sockfd, (struct sockaddr *) &addr, &len) < 0){
+        printf("\n ### ERROR: Failed to get socket port. errno: %i \n", errno);
+    } else {
+        printf("\n Listening on %i\n", addr.sin_port);
+    }
 
     return ret;
 }
