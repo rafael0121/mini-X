@@ -2,8 +2,11 @@
  * Imports                                                                    *
  *============================================================================*/
 
+/* System library */
 #include <stdio.h>
 #include <sys/socket.h>
+
+/* Program library */
 #include <handlesocket.h>
 #include <server.h>
 #include <client.h>

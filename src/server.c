@@ -2,14 +2,17 @@
  * Imports                                                                    *
  *============================================================================*/
 
+/* System library */
 #include <stdio.h>
 #include <sys/socket.h>
-#include <handlesocket.h>
-#include <handleaccept.h>
-#include <server.h>
 #include <errno.h>
 #include <netinet/ip.h>
 #include <string.h>
+
+/* Program library */
+#include <handlesocket.h>
+#include <handleaccept.h>
+#include <server.h>
 #include <msg.h>
 
 /*============================================================================*

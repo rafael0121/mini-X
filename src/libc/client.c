@@ -56,36 +56,26 @@ int connect_server(int sockfd, int port)
  * @return Upon succesfull zero is returned. otherwise
  * a negative error.
  */
-int get_args(int argc, char *argv[])
+int get_args(int argc, char *argv[], int *port, int *id)
 {
-    int port = -1;
-    int id = -1;
-
-
     // Check numbers of args.
-    if (argc > 3 || argc < 2) {
+    if (argc != 3) {
         printf("\n ### ERROR: Missing Arguments.\n");
         HELP(argv[0]);
         return -1;
     }
 
-    // Find arg help.
-    if (strcmp(argv[1], "-h") == 0) {
-        HELP(argv[0]);
-        return -1;
-    }
-
     // Get port and check if is valid.
-    port = atoi(argv[1]);
-    if (port < 1024 || port > 65536) {
+    *port = atoi(argv[1]);
+    if (*port < 1024 || *port > 65536) {
         printf("\n ### ERROR: PORT is out of limit.\n");
         HELP(argv[0]);
         return -1;
     }
 
     // Get id and check if is valid.
-    id = atoi(argv[2]);
-    if (id < 0) {
+    *id = atoi(argv[2]);
+    if (*id < 0) {
         printf("\n ### ERROR: ID is less than zero.\n");
         HELP(argv[0]);
         return -1;
