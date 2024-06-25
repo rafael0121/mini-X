@@ -61,7 +61,7 @@ int get_args(int argc, char *argv[], int *port, int *id)
     // Check numbers of args.
     if (argc != 3) {
         printf("\n ### ERROR: Missing Arguments.\n");
-        HELP(argv[0]);
+        HELPCLIENT(argv[0]);
         return -1;
     }
 
@@ -69,7 +69,7 @@ int get_args(int argc, char *argv[], int *port, int *id)
     *port = atoi(argv[1]);
     if (*port < 1024 || *port > 65536) {
         printf("\n ### ERROR: PORT is out of limit.\n");
-        HELP(argv[0]);
+        HELPCLIENT(argv[0]);
         return -1;
     }
 
@@ -77,7 +77,7 @@ int get_args(int argc, char *argv[], int *port, int *id)
     *id = atoi(argv[2]);
     if (*id < 0) {
         printf("\n ### ERROR: ID is less than zero.\n");
-        HELP(argv[0]);
+        HELPCLIENT(argv[0]);
         return -1;
     }
 

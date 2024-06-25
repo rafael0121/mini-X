@@ -4,6 +4,7 @@
 
 /* System library */
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <errno.h>
 #include <netinet/ip.h>
@@ -122,13 +123,44 @@ int listen_socket(int sockfd)
     return ret;
 }
 
+/**
+ * @brief Get value from cli arguments.
+ *
+ * @return Upon succesfull zero is returned. otherwise
+ * a negative error.
+ */
+int get_port(int argc, char *argv[], int *port)
+{
+    // Check numbers of args.
+    if (argc != 2) {
+        printf("\n ### ERROR: Missing Arguments.\n");
+        HELPSERVER(argv[0]);
+        return -1;
+    }
+
+    // Get port and check if is valid.
+    *port = atoi(argv[1]);
+    if (*port < 1024 || *port > 65536) {
+        printf("\n ### ERROR: PORT is out of limit.\n");
+        HELPSERVER(argv[0]);
+        return -1;
+    }
+    return 0;
+}
+
 /*============================================================================*
  * Main Function                                                              *
  *============================================================================*/
 
-int main()
+int main(int argc, char *argv[])
 {
     int ret = 0;
+    int port = 0;
+
+    ret = get_port(argc, argv, &port);
+    if (ret < 0) {
+        return -1;
+    }
 
     // Open a socket.
     int sockfd = open_socket();
@@ -139,7 +171,7 @@ int main()
     printf("Socket = %i \n", sockfd);
 
     // Naming the socket.
-    ret = setaddr_socket(sockfd, SERVER_PORT);
+    ret = setaddr_socket(sockfd, port);
     if (ret < 0) {
         return -1;
     }

@@ -14,4 +14,13 @@
     // Default timeout for close a connection.
     #define CONNECTION_TIMEOUT 5
 
+    // Help menssage.
+    #define HELPSERVER(argv)\
+    { \
+        printf("\n"); \
+        printf("Usage:\n"); \
+        printf("  %s [1024 < PORT < 65536]\n", argv); \
+        printf("  |  Execute Program\n\n"); \
+    } \
+
 #endif

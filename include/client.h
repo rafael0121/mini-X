@@ -11,14 +11,14 @@
     // Get the cli args.
     extern int get_args(int, char**, int *, int *);
 
-// Help menssage.
-#define HELP(argv)\
-{ \
-    printf("\n"); \
-    printf("Usage:\n"); \
-    printf("  %s [1024 < PORT < 65536] [0 < ID]\n", argv); \
-    printf("  |  Execute Program\n\n"); \
-} \
+    // Help menssage.
+    #define HELPCLIENT(argv)\
+    { \
+        printf("\n"); \
+        printf("Usage:\n"); \
+        printf("  %s [1024 < PORT < 65536] [0 < ID]\n", argv); \
+        printf("  |  Execute Program\n\n"); \
+    } \
 
 
 #endif

@@ -2,13 +2,16 @@
  * Imports                                                                    *
  *============================================================================*/
 
-#include <handlesocket.h>
+/* System library */
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+
+/* Program library */
+#include <handlesocket.h>
 
 /*============================================================================*
  * Public Functions                                                          *
@@ -22,8 +25,7 @@
  */
 int open_socket()
 {
-
-    // 
+    // Open socket.
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (sockfd < 0) {
