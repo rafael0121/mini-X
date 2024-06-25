@@ -153,6 +153,7 @@ int main()
         return -1;
     }
 
+    // While server.
     while(1) {
         int client_sock = accept_connection(sockfd);
         if (client_sock < 0) {
