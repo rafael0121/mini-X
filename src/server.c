@@ -148,6 +148,18 @@ int get_port(int argc, char *argv[], int *port)
     return 0;
 }
 
+int worker(int client_sock) {
+    int ret = -1;
+
+    recv()
+
+    if (ret < 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
 /*============================================================================*
  * Main Function                                                              *
  *============================================================================*/
@@ -157,6 +169,10 @@ int main(int argc, char *argv[])
     int ret = 0;
     int port = 0;
 
+    fd_set active_set;
+    fd_set read_set;
+
+    // Get port from args.
     ret = get_port(argc, argv, &port);
     if (ret < 0) {
         return -1;
@@ -188,15 +204,20 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // While server.
-    while(1) {
+    FD_ZERO (&active_fd_set);
+    FD_SET (sockfd, &active_fd_set);
+
+    while (1) {
+
         int client_sock = accept_connection(sockfd);
         if (client_sock < 0) {
             return -1;
         }
 
-        handle_accept(client_sock);
-   }
+
+    }
+
+
 
     ret = close_socket(sockfd);
     if (ret < 0) {

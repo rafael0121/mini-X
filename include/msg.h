@@ -6,15 +6,23 @@
     #define TCHAU 1
     #define MSG 2
 
-    // Mensage components.
-    struct {
+    // Program identifier.
+    #define SERVER 0
+    #define READER 1
+    #define SENDER 2
+
+    // Menssage components.
+    struct msg_t{
         unsigned short int type;
         unsigned short int orig_uid;
         unsigned short int dest_uid;
         unsigned short int text_len;
         unsigned char text[141];
-    } msg_t;
+    };
 
-    void print();
+    // Receive menssage from server
+    extern int receive_message(int, msg_t *);
+
+    extern int presentation(int, int);
 
 #endif

@@ -75,12 +75,11 @@ int get_args(int argc, char *argv[], int *port, int *id)
 
     // Get id and check if is valid.
     *id = atoi(argv[2]);
-    if (*id < 0) {
-        printf("\n ### ERROR: ID is less than zero.\n");
+    if (*id < 1) {
+        printf("\n ### ERROR: ID must be greater than 0.\n");
         HELPCLIENT(argv[0]);
         return -1;
     }
 
     return 0;
 }
-

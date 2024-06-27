@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     int port = 0;
     int id = 0;
 
-    // Get args.
+    // Get cli args.
     ret = get_args(argc, argv, &port, &id);
     if (ret < 0) {
         return -1;
@@ -35,11 +35,18 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    printf("Socket = %i \n", sockfd);
-
     ret = connect_server(sockfd, port);
     if (ret < 0) {
         return -1;
+    }
+
+    // Send "OI" menssage.
+    ret = oi_msg(sockfd, id);
+    if (ret < 0) {
+        return -1;
+    }
+
+    while(1) {
     }
 
     ret = close_socket(sockfd);
