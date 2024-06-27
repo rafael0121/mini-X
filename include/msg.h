@@ -21,8 +21,9 @@
     };
 
     // Receive menssage from server
-    extern int receive_message(int, msg_t *);
+    extern int receive_message(int, struct msg_t *);
 
-    extern int presentation(int, int);
+    // Send menssage.
+    extern int send_msg(int, struct msg_t);
 
 #endif

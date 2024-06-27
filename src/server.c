@@ -17,7 +17,16 @@
 #include <msg.h>
 
 /*============================================================================*
- * Private Functions                                                          *
+ * Struct                                                                     *
+ *============================================================================*/
+
+struct {
+    int id;
+    int fd;
+} client_a[20];
+
+/*============================================================================*
+ * Sockets Functions                                                          *
  *============================================================================*/
 
 /**
@@ -148,16 +157,148 @@ int get_port(int argc, char *argv[], int *port)
     return 0;
 }
 
-int worker(int client_sock) {
-    int ret = -1;
+/*============================================================================*
+ * Service Menssage Functions                                                   *
+ *============================================================================*/
 
-    recv()
+/**
+ * @brief Service OI menssages.
+ *
+ * @return Upon succesfull zero is returned. otherwise
+ * a negative error.
+ */
+int service_oi(struct msg_t msg, int sockfd) {
 
-    if (ret < 0) {
+    int id = msg.orig_uid;
+
+    // Reader client.
+    if (id > 0 && id < 1000) {
+        // Add new reader
+        for (int i = 0; i < 10; i++) {
+            if (client_a[i].id == -1) {
+                client_a[i].id = id;
+                client_a[i].fd = sockfd;
+                return 0;
+            }
+        }
         return -1;
     }
 
-    return 0;
+    // Sender client.
+    if (id > 1000 && id < 1999) {
+        // Add new sender
+        for (int i = 10; i < 20; i++) {
+            if (client_a[i].id == -1) {
+                client_a[i].id = id;
+                client_a[i].fd = sockfd;
+                return 0;
+            }
+        }
+        return -1;
+    }
+
+    return -1;
+}
+
+/**
+ * @brief Service TCHAU menssages.
+ *
+ * @return Upon succesfull zero is returned. otherwise
+ * a negative error.
+ */
+int service_tchau(struct msg_t msg) {
+
+    int id = msg.orig_uid;
+
+    // Reader client.
+    if (id > 0 && id < 1000) {
+        // Remove reader.
+        for (int i = 0; i < 10; i++) {
+            if (client_a[i].id == id) {
+                client_a[i].id = -1;
+                return 0;
+            }
+        }
+        return -1;
+    }
+
+    // Sender client.
+    if (id > 1000 && id < 1999) {
+        // Remove senders.
+        for (int i = 10; i < 20; i++) {
+            if (client_a[i].id == id) {
+                client_a[i].id = -1;
+                return 0;
+            }
+        }
+        return -1;
+    }
+
+    return -1;
+}
+
+/**
+ * @brief Service MSG menssages.
+ *
+ * @return Upon succesfull zero is returned. otherwise
+ * a negative error.
+ */
+int service_msg(struct msg_t msg) {
+
+    int orig = msg.orig_uid;
+
+    /* Check if client is registered. */
+    int aux = -1;
+    for (int i = 10; i < 20; i++) {
+        if (client_a[i].id == orig) {
+            aux = 0;
+            break;
+        }
+    };
+    if (aux == -1) {
+        return -1;
+    }
+
+    int dest = msg.dest_uid;
+
+    // Send to only a dest.
+    if (dest >= 0 && dest < 1999) {
+        /* Get dest socket*/
+        int dest_fd;
+        aux = -1;
+        for (int i = 0; i < 10; i++) {
+            if (client_a[i].id == msg.dest_uid) {
+                dest_fd = client_a[i].fd;
+                aux = 0;
+                break;
+            }
+        };
+        if (aux == -1) {
+            return -1;
+        }
+
+        int ret = send_msg(dest_fd, msg);
+        if (ret < 0) {
+            return ret;
+        }
+
+        return 0;
+    }
+
+    // Send the menssage for all client connected.
+    if (dest == 0) {
+        for (int i = 0; i < 10; i++) {
+            if (client_a[i].id > 0) {
+                int ret = send_msg(client_a[i].fd, msg);
+                if (ret < 0) {
+                    return ret;
+                }
+            };
+        }
+        return 0;
+    }
+
+    return -1;
 }
 
 /*============================================================================*
@@ -168,9 +309,10 @@ int main(int argc, char *argv[])
 {
     int ret = 0;
     int port = 0;
+    struct msg_t msg;
 
-    fd_set active_set;
-    fd_set read_set;
+    fd_set active_fd_set;
+    fd_set read_fd_set;
 
     // Get port from args.
     ret = get_port(argc, argv, &port);
@@ -208,16 +350,52 @@ int main(int argc, char *argv[])
     FD_SET (sockfd, &active_fd_set);
 
     while (1) {
+        read_fd_set = active_fd_set;
 
-        int client_sock = accept_connection(sockfd);
-        if (client_sock < 0) {
+        // Wait for a input from active sockets.
+        if (select (FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
+            printf("\n ### ERROR: Select failed. errno = %i\n", errno);
             return -1;
         }
 
-
+        // Service sockets with arrive data.
+        for (int i = 0; i < FD_SETSIZE; i++) {
+            if (FD_ISSET(i, &read_fd_set)) {
+                // Connection request.
+                if (i == sockfd) {
+                    int newsock = accept_connection(sockfd);
+                    if (newsock < 0) {
+                        return -1;
+                    }
+                    // Add new socket in active fd set.
+                    FD_SET(newsock, &active_fd_set);
+                } else {
+                    ret = receive_message(i, &msg);
+                    if (ret < 0) {
+                        return -1;
+                    }
+                    switch (msg.type) {
+                        case OI:
+                            service_oi(msg, i);
+                            break;
+                        case MSG:
+                            service_msg(msg);
+                            break;
+                        case TCHAU:
+                            service_tchau(msg);
+                            break;
+                        default:
+                            printf("\n ### Connection Error: Invalid menssage type.\n");
+                            FD_CLR(i, &active_fd_set);
+                            ret = close_socket(i);
+                            if (ret < 0) {
+                                return -1;
+                            }
+                    }
+                }
+            }
+        }
     }
-
-
 
     ret = close_socket(sockfd);
     if (ret < 0) {

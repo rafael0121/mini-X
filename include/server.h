@@ -14,6 +14,10 @@
     // Default timeout for close a connection.
     #define CONNECTION_TIMEOUT 5
 
+/*============================================================================*
+ * Macros                                                                     *
+ *============================================================================*/
+
     // Help menssage.
     #define HELPSERVER(argv)\
     { \

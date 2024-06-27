@@ -40,14 +40,16 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    // Send "OI" menssage.
-    ret = oi_msg(sockfd, id);
-    if (ret < 0) {
-        return -1;
-    }
+    struct msg_t msg;
+    msg.type = OI;
+    msg.orig_uid = id;
+    msg.dest_uid = 0;
+    msg.text_len = 1;
+    msg.text[0] = 'a';
 
-    while(1) {
-    }
+    printf("\n\n %i", msg.type);
+
+    send_msg(sockfd, msg);
 
     ret = close_socket(sockfd);
     if (ret < 0) {
