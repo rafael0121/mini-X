@@ -4,6 +4,7 @@
 
 /* System library */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 
@@ -18,20 +19,37 @@
  *============================================================================*/
 
 int menu(struct msg_t *msg) {
-    int dest;
-    char *text = NULL;
+    char input[4];
+    char ch[4];
+    char text[140];
 
     printf("\n==============\n");
+    printf("Send a menssage (1)\n");
+    printf("Exit (0)\n");
+    if (fgets(ch, 4, stdin) == NULL) {
+        return -1;
+    }
+
+    if (atoi(ch) == 0) {
+        return -1;
+    }
+
     printf("Type destiny id (0(all) - 999): ");
-    scanf("%i", &dest);
+    if (fgets(input, 4, stdin) == NULL) {
+        return -1;
+    }
     printf("\n");
+
+    int dest = atoi(input);
 
     if (dest < 0 || dest > 999) {
         return -1;
     }
 
     printf("Type the menssage (max 140 char): ");
-    scanf("%ms", &text);
+    if (fgets(text, 140, stdin) == NULL) {
+        return -1;
+    }
 
     int length = strlen(text);
 
@@ -88,7 +106,7 @@ int main(int argc, char *argv[])
 
         ret = menu(&msg);
         if (ret < 0) {
-            return -1;
+            break;
         }
 
         send_msg(sockfd, msg);

@@ -25,7 +25,12 @@ int receive_message(int sockfd, struct msg_t *msg)
         return -1;
     }
 
-    return 0;
+    if (ret == 0) {
+        printf("\n ### ERROR: No data read from socket: %i \n", sockfd);
+        return 0;
+    }
+
+    return ret;
 }
 
 int send_msg(int dest_sock, struct msg_t msg) {
@@ -38,5 +43,10 @@ int send_msg(int dest_sock, struct msg_t msg) {
         return -1;
     }
 
-    return 0;
+    if (ret == 0) {
+        printf("\n ### ERROR: No data sended from socket: %i.\n", dest_sock);
+        return -2;
+    }
+
+    return ret;
 }

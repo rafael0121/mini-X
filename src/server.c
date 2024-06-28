@@ -148,6 +148,13 @@ int service_oi(struct msg_t msg, int sockfd) {
 
     // Reader client.
     if (id > 0 && id < 1000) {
+        // Check if exist a client using the same id.
+        for (int i = 0; i < 10; i++) {
+            if (client_a[i].id == id) {
+                printf("\n ### ERROR: [OI] ID already in use.\n");
+                return -1;
+            }
+        }
         // Add new reader
         for (int i = 0; i < 10; i++) {
             if (client_a[i].id == -1) {
@@ -170,8 +177,11 @@ int service_oi(struct msg_t msg, int sockfd) {
                 client_a[i].id = id;
                 client_a[i].fd = sockfd;
                 // Send back OI menssage.
-                send_msg(sockfd, msg);
-                return 0;
+                if (send_msg(sockfd, msg) == -1){
+                    return -1;
+                } else {
+                    return 0;
+                }
             }
         }
         printf("\n ### ERROR: [OI] Server full.\n");
@@ -368,15 +378,30 @@ int main(int argc, char *argv[])
                     if (ret < 0) {
                         return -1;
                     }
+                    if (ret == 0) {
+                        msg.type = TCHAU;
+                    }
                     switch (msg.type) {
                         case OI:
-                            service_oi(msg, i);
+                            if (service_oi(msg, i) == -1) {
+                                ret = close_socket(i);
+                                if (ret < 0) {
+                                    return -1;
+                                }
+                                FD_CLR (i, &active_fd_set);
+                            }
                             break;
                         case MSG:
                             service_msg(msg);
                             break;
                         case TCHAU:
                             service_tchau(msg);
+                            printf("Close connection socket: %i.\n", i); 
+                            ret = close_socket(i);
+                            if (ret < 0) {
+                                return -1;
+                            }
+                            FD_CLR (i, &active_fd_set);
                             break;
                         default:
                             printf("\n ### Connection Error: Invalid menssage type.\n");

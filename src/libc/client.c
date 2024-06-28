@@ -95,14 +95,16 @@ int handshake (int sockfd, int id) {
     msg.text[0] = '\0';
 
     int ret = send_msg(sockfd, msg);
-    if (ret < 0) {
+    if (ret <= 0) {
+        printf("\n ### ERROR: [HANDSHAKE] Failed to send mensage.\n");
         return -1;
     }
 
     struct msg_t rec_msg;
 
     ret = receive_message(sockfd, &rec_msg);
-    if (ret < 0) {
+    if (ret <= 0) {
+        printf("\n ### ERROR: [HANDSHAKE] Failed to receive mensage.\n");
         return -1;
     }
 
