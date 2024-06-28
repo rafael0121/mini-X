@@ -11,6 +11,8 @@
     // Get the cli args.
     extern int get_args(int, char**, int *, int *);
 
+    extern int handshake(int, int);
+
     // Help menssage.
     #define HELPCLIENT(argv)\
     { \

@@ -25,7 +25,6 @@ export CFLAGS += -Wall -Wextra -Werror
 export CFLAGS += -Winit-self -Wswitch-default -Werror
 export CFLAGS += -Wshadow -Wuninitialized -Wlogical-op
 export CFLAGS += -Wvla -Wredundant-decls
-export CFLAGS += -pedantic-errors
 
 # Ar flags.
 export ARFLAGS = rcs

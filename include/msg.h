@@ -25,5 +25,4 @@
 
     // Send menssage.
     extern int send_msg(int, struct msg_t);
-
 #endif

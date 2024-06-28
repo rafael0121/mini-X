@@ -15,13 +15,13 @@
 
 int receive_message(int sockfd, struct msg_t *msg)
 {
-    size_t lenght = sizeof(*msg);
+    size_t length = sizeof(*msg);
 
     // Read the arrived data.
-    int ret = read(sockfd, msg, lenght);
+    int ret = read(sockfd, msg, length);
 
     if (ret < 0) {
-        printf("\n ### ERROR: Failed to receive menssage from server. errno: %i \n", errno);
+        printf("\n ### ERROR: Failed to receive menssage. errno: %i \n", errno);
         return -1;
     }
 
@@ -30,9 +30,9 @@ int receive_message(int sockfd, struct msg_t *msg)
 
 int send_msg(int dest_sock, struct msg_t msg) {
 
-    size_t lenght = sizeof(msg);
+    size_t length = sizeof(msg);
 
-    int ret = write(dest_sock, &msg, lenght);
+    int ret = write(dest_sock, &msg, length);
     if (ret < 0) {
         printf("\n ### ERROR: Failed to send %i message. errno: %i \n",msg.type, errno);
         return -1;

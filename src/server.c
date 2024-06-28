@@ -9,10 +9,10 @@
 #include <errno.h>
 #include <netinet/ip.h>
 #include <string.h>
+#include <signal.h>
 
 /* Program library */
 #include <handlesocket.h>
-#include <handleaccept.h>
 #include <server.h>
 #include <msg.h>
 
@@ -50,31 +50,6 @@ int accept_connection(int sockfd)
     return ret;
 }
 
-/** 
- * @brief Set a timeout for socket finish transmission before
- * close.
- *
- * @return Upon succesfull zero is returned, otherwise
- * a negative errno.
- */
-int settimeout_socket(int sockfd)
-{
-    struct linger opt;
-
-    opt.l_onoff = 1;
-    opt.l_linger = CONNECTION_TIMEOUT;
-
-    // Set socket timeout. 
-    int ret = setsockopt(sockfd, SOL_SOCKET, SO_LINGER,
-                &opt, sizeof(opt));
-
-    if (ret < 0) {
-        printf("\n ### ERROR: Failed to set timeout in socket. errno: %i \n", errno);
-    }
-
-    return ret;
-}
-
 /**
  * @brief Bind a address to the socket.
  *
@@ -104,7 +79,7 @@ int setaddr_socket(int sockfd, int port)
 
 /**
  * @brief Set the socket to listen and accept connections
- * the lenght of the queue for pending connections is defined
+ * the length of the queue for pending connections is defined
  * by MAX_QUEUE.
  *
  * @return Upon succesfull zero is returned. otherwise
@@ -178,9 +153,12 @@ int service_oi(struct msg_t msg, int sockfd) {
             if (client_a[i].id == -1) {
                 client_a[i].id = id;
                 client_a[i].fd = sockfd;
+                // Send back OI menssage.
+                send_msg(sockfd, msg);
                 return 0;
             }
         }
+        printf("\n ### ERROR: [OI] Server full.\n");
         return -1;
     }
 
@@ -191,11 +169,16 @@ int service_oi(struct msg_t msg, int sockfd) {
             if (client_a[i].id == -1) {
                 client_a[i].id = id;
                 client_a[i].fd = sockfd;
+                // Send back OI menssage.
+                send_msg(sockfd, msg);
                 return 0;
             }
         }
+        printf("\n ### ERROR: [OI] Server full.\n");
         return -1;
     }
+
+    printf("\n ### ERROR: [OI] Incorrect ID.\n");
 
     return -1;
 }
@@ -219,6 +202,7 @@ int service_tchau(struct msg_t msg) {
                 return 0;
             }
         }
+        printf("\n ### ERROR: [TCHAU] Reader not found.\n");
         return -1;
     }
 
@@ -231,6 +215,7 @@ int service_tchau(struct msg_t msg) {
                 return 0;
             }
         }
+        printf("\n ### ERROR: [TCHAU] Sender not found.\n");
         return -1;
     }
 
@@ -256,13 +241,14 @@ int service_msg(struct msg_t msg) {
         }
     };
     if (aux == -1) {
+        printf("\n ### ERROR: [MSG] Client not registered.\n");
         return -1;
     }
 
     int dest = msg.dest_uid;
 
     // Send to only a dest.
-    if (dest >= 0 && dest < 1999) {
+    if (dest > 0 && dest < 1999) {
         /* Get dest socket*/
         int dest_fd;
         aux = -1;
@@ -272,8 +258,9 @@ int service_msg(struct msg_t msg) {
                 aux = 0;
                 break;
             }
-        };
+        }
         if (aux == -1) {
+            printf("\n ### ERROR: [MSG] Dest not found.\n");
             return -1;
         }
 
@@ -297,6 +284,8 @@ int service_msg(struct msg_t msg) {
         }
         return 0;
     }
+    
+    printf("\n ### ERROR: [MSG] Bad.\n");
 
     return -1;
 }
@@ -310,6 +299,14 @@ int main(int argc, char *argv[])
     int ret = 0;
     int port = 0;
     struct msg_t msg;
+
+    // Ignore SIGPIPE
+    signal(SIGPIPE, SIG_IGN);
+
+    // Client array.
+    for (int i = 0; i < 20; i++) {
+        client_a[i].id = -1;
+    }
 
     fd_set active_fd_set;
     fd_set read_fd_set;
@@ -330,12 +327,6 @@ int main(int argc, char *argv[])
 
     // Naming the socket.
     ret = setaddr_socket(sockfd, port);
-    if (ret < 0) {
-        return -1;
-    }
-
-    // Set a timeout before close a busy socket.
-    ret = settimeout_socket(sockfd);
     if (ret < 0) {
         return -1;
     }
@@ -367,6 +358,9 @@ int main(int argc, char *argv[])
                     if (newsock < 0) {
                         return -1;
                     }
+
+                    printf("Accept new connection - new socket = %i.\n", newsock);
+
                     // Add new socket in active fd set.
                     FD_SET(newsock, &active_fd_set);
                 } else {
@@ -386,11 +380,6 @@ int main(int argc, char *argv[])
                             break;
                         default:
                             printf("\n ### Connection Error: Invalid menssage type.\n");
-                            FD_CLR(i, &active_fd_set);
-                            ret = close_socket(i);
-                            if (ret < 0) {
-                                return -1;
-                            }
                     }
                 }
             }

@@ -4,6 +4,7 @@
 
 /* System library */
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 
 /* Program library */
@@ -11,6 +12,40 @@
 #include <server.h>
 #include <client.h>
 #include <msg.h>
+
+/*============================================================================*
+ * Private Function                                                           *
+ *============================================================================*/
+
+int menu(struct msg_t *msg) {
+    int dest;
+    char *text = NULL;
+
+    printf("\n==============\n");
+    printf("Type destiny id (0(all) - 999): ");
+    scanf("%i", &dest);
+    printf("\n");
+
+    if (dest < 0 || dest > 999) {
+        return -1;
+    }
+
+    printf("Type the menssage (max 140 char): ");
+    scanf("%ms", &text);
+
+    int length = strlen(text);
+
+    if(length > 140) {
+        return -1;
+    }
+
+    msg->type = MSG;
+    msg->dest_uid = dest;
+    msg->text_len = length;
+    strcpy((char *) msg->text, text);
+
+    return 0;
+}
 
 /*============================================================================*
  * Main Function                                                              *
@@ -40,16 +75,24 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    struct msg_t msg;
-    msg.type = OI;
-    msg.orig_uid = id;
-    msg.dest_uid = 0;
-    msg.text_len = 1;
-    msg.text[0] = 'a';
+    ret = handshake(sockfd, id);
+    if (ret < 0) {
+        return -1;
+    } else {
+        printf("===> Handshake Success \n");
+    }
 
-    printf("\n\n %i", msg.type);
+    while(1) {
+        struct msg_t msg;
+        msg.orig_uid = id;
 
-    send_msg(sockfd, msg);
+        ret = menu(&msg);
+        if (ret < 0) {
+            return -1;
+        }
+
+        send_msg(sockfd, msg);
+    }
 
     ret = close_socket(sockfd);
     if (ret < 0) {

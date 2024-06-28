@@ -15,6 +15,7 @@
 /* Program librarys */
 #include <server.h>
 #include <client.h>
+#include <msg.h>
 
 /*============================================================================*
  * Public Functions                                                          *
@@ -37,9 +38,9 @@ int connect_server(int sockfd, int port)
     addr.sin_port = port;
     addr.sin_addr.s_addr = INADDR_ANY;
 
-    socklen_t lenght = sizeof(addr);
+    socklen_t length = sizeof(addr);
     
-    int ret = connect(sockfd, (struct sockaddr *) &addr, lenght);
+    int ret = connect(sockfd, (struct sockaddr *) &addr, length);
 
     if (ret < 0) {
         printf("\n ### ERROR: Failed to connect with the server. errno: %i \n", errno);
@@ -82,4 +83,32 @@ int get_args(int argc, char *argv[], int *port, int *id)
     }
 
     return 0;
+}
+
+int handshake (int sockfd, int id) {
+    struct msg_t msg;
+
+    msg.type = OI;
+    msg.orig_uid = id;
+    msg.dest_uid = 0;
+    msg.text_len = 0;
+    msg.text[0] = '\0';
+
+    int ret = send_msg(sockfd, msg);
+    if (ret < 0) {
+        return -1;
+    }
+
+    struct msg_t rec_msg;
+
+    ret = receive_message(sockfd, &rec_msg);
+    if (ret < 0) {
+        return -1;
+    }
+
+    if (rec_msg.orig_uid == msg.orig_uid) {
+        return 0;
+    }
+
+    return -1;
 }
