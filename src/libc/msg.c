@@ -13,6 +13,12 @@
  * Public Functions                                                          *
  *============================================================================*/
 
+/**
+ * @brief Receive mensage from a socket.
+ *
+ * @return Upon succesfull the number of bytes read is returned. otherwise
+ * a negative error if failed or 0 if zero bytes read.
+ */
 int receive_message(int sockfd, struct msg_t *msg)
 {
     size_t length = sizeof(*msg);
@@ -27,12 +33,18 @@ int receive_message(int sockfd, struct msg_t *msg)
 
     if (ret == 0) {
         fprintf(stderr, "\n ### ERROR: No data read from socket: %i \n", sockfd);
-        return 0;
+        return -2;
     }
     
     return ret;
 }
 
+/**
+ * @brief Receive mensage from a socket.
+ *
+ * @return Upon succesfull the number of bytes read is returned. otherwise
+ * a negative error if failed or 0 if zero bytes read.
+ */
 int send_message(int dest_sock, struct msg_t msg) {
 
     size_t length = sizeof(msg);

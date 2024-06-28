@@ -85,6 +85,12 @@ int get_args(int argc, char *argv[], int *port, int *id)
     return 0;
 }
 
+/**
+ * @brief Register client in server.
+ *
+ * @return Upon succesfull zero is returned. otherwise
+ * a negative error.
+ */
 int handshake (int sockfd, int id) {
     struct msg_t msg;
 
@@ -103,7 +109,7 @@ int handshake (int sockfd, int id) {
     struct msg_t rec_msg;
 
     ret = receive_message(sockfd, &rec_msg);
-    if (ret <= 0) {
+    if (ret < 0) {
         fprintf(stderr, "\n ### ERROR: [HANDSHAKE] Failed to receive mensage.\n");
         return -1;
     }

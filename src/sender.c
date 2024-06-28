@@ -23,9 +23,9 @@ int menu(struct msg_t *msg) {
     char ch[4];
     char text[140];
 
-    printf("\n==============\n");
-    printf("Send a message (1)\n");
-    printf("Exit (0)\n");
+    fprintf(stdout, "\n==============\n");
+    fprintf(stdout, "Send a message (1)\n");
+    fprintf(stdout, "Exit (0)\n");
     if (fgets(ch, 4, stdin) == NULL) {
         return -1;
     }
@@ -34,11 +34,11 @@ int menu(struct msg_t *msg) {
         return -1;
     }
 
-    printf("Type destiny id (0(all) - 999): ");
+    fprintf(stdout, "Type destiny id (0(all) - 999): ");
     if (fgets(input, 4, stdin) == NULL) {
         return -1;
     }
-    printf("\n");
+    fprintf(stdout, "\n");
 
     int dest = atoi(input);
 
@@ -46,7 +46,7 @@ int menu(struct msg_t *msg) {
         return -1;
     }
 
-    printf("Type the message (max 140 char): ");
+    fprintf(stdout, "Type the message (max 140 char): ");
     getchar();
     if (fgets(text, 140, stdin) == NULL) {
         return -1;

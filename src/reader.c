@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
         struct msg_t msg;
         msg.orig_uid = id;
 
-        if (receive_message(sockfd, &msg) <= 0){
+        if (receive_message(sockfd, &msg) < 0){
             fprintf(stderr, "\n ### ERROR: Failed to receive mensage.\n");
             break;
         }

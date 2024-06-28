@@ -28,7 +28,7 @@ int open_socket()
     // Open socket.
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        printf("\n ### ERROR: Failed to create socket. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to create socket. errno: %i \n", errno);
     }
 
     return sockfd;
@@ -45,7 +45,7 @@ int close_socket (int sockfd)
     int ret = close(sockfd);
 
     if (ret < 0) {
-        printf("\n ### ERROR: Failed to close socket. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to close socket. errno: %i \n", errno);
     }
 
     return ret;
