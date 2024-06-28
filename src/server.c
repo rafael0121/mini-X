@@ -137,7 +137,7 @@ int get_port(int argc, char *argv[], int *port)
  *============================================================================*/
 
 /**
- * @brief Service OI menssages.
+ * @brief Service OI messages.
  *
  * @return Upon succesfull zero is returned. otherwise
  * a negative error.
@@ -146,17 +146,20 @@ int service_oi(struct msg_t msg, int sockfd) {
 
     int id = msg.orig_uid;
 
+    // Check if exist a client using the same id.
+    for (int i = 0; i < 20; i++) {
+        if (client_a[i].id == id || client_a[i].id == (id + 1000)) {
+            fprintf(stderr, "\n ### ERROR: [OI] ID already in use.\n");
+            // Resend the same message without swap dest and orig.
+            send_message(sockfd, msg);
+            return -1;
+        }
+    }
+
     // Swap orig and dest.
     msg.orig_uid = msg.dest_uid;
     msg.dest_uid = id;
 
-    // Check if exist a client using the same id.
-    for (int i = 0; i < 20; i++) {
-        if (client_a[i].id == id) {
-            fprintf(stderr, "\n ### ERROR: [OI] ID already in use.\n");
-            return -1;
-        }
-    }
 
     // Reader client.
     if (id > 0 && id < 1000) {
@@ -166,7 +169,7 @@ int service_oi(struct msg_t msg, int sockfd) {
                 client_a[i].id = id;
                 client_a[i].fd = sockfd;
 
-                // Send back OI menssage.
+                // Send back OI message.
                 send_message(sockfd, msg);
                 return 0;
             }
@@ -182,7 +185,7 @@ int service_oi(struct msg_t msg, int sockfd) {
             if (client_a[i].id == -1) {
                 client_a[i].id = id;
                 client_a[i].fd = sockfd;
-                // Send back OI menssage.
+                // Send back OI message.
                 if (send_message(sockfd, msg) == -1){
                     return -1;
                 } else {
@@ -200,7 +203,7 @@ int service_oi(struct msg_t msg, int sockfd) {
 }
 
 /**
- * @brief Service TCHAU menssages.
+ * @brief Service TCHAU messages.
  *
  * @return Upon succesfull zero is returned. otherwise
  * a negative error.
@@ -226,7 +229,7 @@ int service_tchau(struct msg_t msg, int sockfd) {
     if (id > 1000 && id < 1999) {
         // Remove senders.
         for (int i = 10; i < 20; i++) {
-            if (client_a[i].id == id) {
+            if (client_a[i].id == id && client_a[i].fd == sockfd) {
                 client_a[i].id = -1;
                 goto jp_tchaumsg;
             }
@@ -249,7 +252,7 @@ jp_tchaumsg:
 }
 
 /**
- * @brief Service MSG menssages.
+ * @brief Service MSG messages.
  *
  * @return Upon succesfull zero is returned. otherwise
  * a negative error.
@@ -426,7 +429,7 @@ int main(int argc, char *argv[])
                                 fprintf(stdout, "Close connection socket: %i.\n", i); 
                             break;
                         default:
-                            fprintf(stderr, "\n ### Connection Error: Invalid menssage type.\n");
+                            fprintf(stderr, "\n ### ERROR: Invalid message type.\n");
                     }
                 }
             }

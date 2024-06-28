@@ -24,7 +24,7 @@ int menu(struct msg_t *msg) {
     char text[140];
 
     printf("\n==============\n");
-    printf("Send a menssage (1)\n");
+    printf("Send a message (1)\n");
     printf("Exit (0)\n");
     if (fgets(ch, 4, stdin) == NULL) {
         return -1;
@@ -46,7 +46,7 @@ int menu(struct msg_t *msg) {
         return -1;
     }
 
-    printf("Type the menssage (max 140 char): ");
+    printf("Type the message (max 140 char): ");
     getchar();
     if (fgets(text, 140, stdin) == NULL) {
         return -1;
@@ -98,9 +98,10 @@ int main(int argc, char *argv[])
 
     ret = handshake(sockfd, id);
     if (ret < 0) {
+        fprintf(stderr, "\n ### ERROR: Handshake Failed\n");
         return -1;
     } else {
-        printf("===> Handshake Success \n");
+        fprintf(stdout, "===> Handshake Success \n");
     }
 
     while(1) {

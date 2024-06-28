@@ -1,6 +1,10 @@
 #ifndef MSG_H_
 #define MSH_H_
 
+/*============================================================================*
+ * Constants                                                                  *
+ *============================================================================*/
+
     // Mensages codes.
     #define OI 0
     #define TCHAU 1
@@ -11,6 +15,10 @@
     #define READER 1
     #define SENDER 2
 
+/*============================================================================*
+ * Structs                                                                    *
+ *============================================================================*/
+
     // Menssage components.
     struct msg_t{
         unsigned short int type;
@@ -20,9 +28,13 @@
         unsigned char text[141];
     };
 
-    // Receive menssage from server
+/*============================================================================*
+ * Public Functions                                                           *
+ *============================================================================*/
+
+    // Receive message from server
     extern int receive_message(int, struct msg_t *);
 
-    // Send menssage.
+    // Send message.
     extern int send_message(int, struct msg_t);
 #endif

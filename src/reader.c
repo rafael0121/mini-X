@@ -44,9 +44,10 @@ int main(int argc, char *argv[])
 
     ret = handshake(sockfd, id);
     if (ret < 0) {
+        fprintf(stderr, "\n ### ERROR: Handshake Failed\n");
         return -1;
     } else {
-        printf("===> Handshake Success \n");
+        fprintf(stdout, "===> Handshake Success \n");
     }
 
     while(1) {

@@ -5,20 +5,14 @@
  * Constants                                                                  *
  *============================================================================*/
 
-    // Communication port.
-    #define SERVER_PORT 50234
-
     // Max clients waiting for accept connection.
     #define MAX_QUEUE 20
-
-    // Default timeout for close a connection.
-    #define CONNECTION_TIMEOUT 5
 
 /*============================================================================*
  * Macros                                                                     *
  *============================================================================*/
 
-    // Help menssage.
+    // Help message.
     #define HELPSERVER(argv)\
     { \
         printf("\n"); \
