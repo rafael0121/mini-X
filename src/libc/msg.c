@@ -16,35 +16,35 @@
 int receive_message(int sockfd, struct msg_t *msg)
 {
     size_t length = sizeof(*msg);
-
+    
     // Read the arrived data.
     int ret = read(sockfd, msg, length);
 
     if (ret < 0) {
-        printf("\n ### ERROR: Failed to receive menssage. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to receive menssage. errno: %i \n", errno);
         return -1;
     }
 
     if (ret == 0) {
-        printf("\n ### ERROR: No data read from socket: %i \n", sockfd);
+        fprintf(stderr, "\n ### ERROR: No data read from socket: %i \n", sockfd);
         return 0;
     }
-
+    
     return ret;
 }
 
-int send_msg(int dest_sock, struct msg_t msg) {
+int send_message(int dest_sock, struct msg_t msg) {
 
     size_t length = sizeof(msg);
 
     int ret = write(dest_sock, &msg, length);
     if (ret < 0) {
-        printf("\n ### ERROR: Failed to send %i message. errno: %i \n",msg.type, errno);
+        fprintf(stderr, "\n ### ERROR: Failed to send %i message. errno: %i \n",msg.type, errno);
         return -1;
     }
 
     if (ret == 0) {
-        printf("\n ### ERROR: No data sended from socket: %i.\n", dest_sock);
+        fprintf(stderr, "\n ### ERROR: No data sended from socket: %i.\n", dest_sock);
         return -2;
     }
 

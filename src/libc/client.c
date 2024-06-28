@@ -43,9 +43,9 @@ int connect_server(int sockfd, int port)
     int ret = connect(sockfd, (struct sockaddr *) &addr, length);
 
     if (ret < 0) {
-        printf("\n ### ERROR: Failed to connect with the server. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to connect with the server. errno: %i \n", errno);
     } else {
-        printf("\n Succesfull connect \n");
+        fprintf(stdout, "\n Succesfull connect \n");
     }
 
     return ret;
@@ -61,7 +61,7 @@ int get_args(int argc, char *argv[], int *port, int *id)
 {
     // Check numbers of args.
     if (argc != 3) {
-        printf("\n ### ERROR: Missing Arguments.\n");
+        fprintf(stderr, "\n ### ERROR: Missing Arguments.\n");
         HELPCLIENT(argv[0]);
         return -1;
     }
@@ -69,7 +69,7 @@ int get_args(int argc, char *argv[], int *port, int *id)
     // Get port and check if is valid.
     *port = atoi(argv[1]);
     if (*port < 1024 || *port > 65536) {
-        printf("\n ### ERROR: PORT is out of limit.\n");
+        fprintf(stderr, "\n ### ERROR: PORT is out of limit.\n");
         HELPCLIENT(argv[0]);
         return -1;
     }
@@ -77,7 +77,7 @@ int get_args(int argc, char *argv[], int *port, int *id)
     // Get id and check if is valid.
     *id = atoi(argv[2]);
     if (*id < 1) {
-        printf("\n ### ERROR: ID must be greater than 0.\n");
+        fprintf(stderr, "\n ### ERROR: ID must be greater than 0.\n");
         HELPCLIENT(argv[0]);
         return -1;
     }
@@ -94,9 +94,9 @@ int handshake (int sockfd, int id) {
     msg.text_len = 0;
     msg.text[0] = '\0';
 
-    int ret = send_msg(sockfd, msg);
+    int ret = send_message(sockfd, msg);
     if (ret <= 0) {
-        printf("\n ### ERROR: [HANDSHAKE] Failed to send mensage.\n");
+        fprintf(stderr, "\n ### ERROR: [HANDSHAKE] Failed to send mensage.\n");
         return -1;
     }
 
@@ -104,11 +104,11 @@ int handshake (int sockfd, int id) {
 
     ret = receive_message(sockfd, &rec_msg);
     if (ret <= 0) {
-        printf("\n ### ERROR: [HANDSHAKE] Failed to receive mensage.\n");
+        fprintf(stderr, "\n ### ERROR: [HANDSHAKE] Failed to receive mensage.\n");
         return -1;
     }
 
-    if (rec_msg.orig_uid == msg.orig_uid) {
+    if (rec_msg.orig_uid == msg.dest_uid) {
         return 0;
     }
 

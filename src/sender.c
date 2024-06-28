@@ -47,6 +47,7 @@ int menu(struct msg_t *msg) {
     }
 
     printf("Type the menssage (max 140 char): ");
+    getchar();
     if (fgets(text, 140, stdin) == NULL) {
         return -1;
     }
@@ -88,6 +89,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    fprintf(stdout, "Socket = %i \n", sockfd);
+
     ret = connect_server(sockfd, port);
     if (ret < 0) {
         return -1;
@@ -109,7 +112,9 @@ int main(int argc, char *argv[])
             break;
         }
 
-        send_msg(sockfd, msg);
+        if (send_message(sockfd, msg) < 0){
+            fprintf(stderr, "\n ### ERROR: Failed to send mensage.\n");
+        }
     }
 
     ret = close_socket(sockfd);

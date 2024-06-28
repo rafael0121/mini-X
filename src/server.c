@@ -44,7 +44,7 @@ int accept_connection(int sockfd)
     int ret = accept(sockfd, &addr, &length);
 
     if (ret < 0) {
-        printf("\n ### ERROR: Failed to accept a connection. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to accept a connection. errno: %i \n", errno);
     }
 
     return ret;
@@ -71,7 +71,7 @@ int setaddr_socket(int sockfd, int port)
     int ret = bind(sockfd, (struct sockaddr *) (&addr), sizeof(struct sockaddr));
 
     if (ret < 0) {
-        printf("\n ### ERROR: Failed to bind the address. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to bind the address. errno: %i \n", errno);
     }
 
     return ret;
@@ -92,16 +92,16 @@ int listen_socket(int sockfd)
     int ret = listen(sockfd, MAX_QUEUE);
 
     if (ret < 0) {
-        printf("\n ### ERROR: Failed to set socket to listen. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to set socket to listen. errno: %i \n", errno);
     }
 
     struct sockaddr_in addr;
     socklen_t len = sizeof(addr);
 
     if (getsockname(sockfd, (struct sockaddr *) &addr, &len) < 0){
-        printf("\n ### ERROR: Failed to get socket port. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to get socket port. errno: %i \n", errno);
     } else {
-        printf("\n Listening on %i\n", addr.sin_port);
+        fprintf(stderr, "\n Listening on %i\n", addr.sin_port);
     }
 
     return ret;
@@ -117,7 +117,7 @@ int get_port(int argc, char *argv[], int *port)
 {
     // Check numbers of args.
     if (argc != 2) {
-        printf("\n ### ERROR: Missing Arguments.\n");
+        fprintf(stderr, "\n ### ERROR: Missing Arguments.\n");
         HELPSERVER(argv[0]);
         return -1;
     }
@@ -125,7 +125,7 @@ int get_port(int argc, char *argv[], int *port)
     // Get port and check if is valid.
     *port = atoi(argv[1]);
     if (*port < 1024 || *port > 65536) {
-        printf("\n ### ERROR: PORT is out of limit.\n");
+        fprintf(stderr, "\n ### ERROR: PORT is out of limit.\n");
         HELPSERVER(argv[0]);
         return -1;
     }
@@ -146,26 +146,32 @@ int service_oi(struct msg_t msg, int sockfd) {
 
     int id = msg.orig_uid;
 
+    // Swap orig and dest.
+    msg.orig_uid = msg.dest_uid;
+    msg.dest_uid = id;
+
+    // Check if exist a client using the same id.
+    for (int i = 0; i < 20; i++) {
+        if (client_a[i].id == id) {
+            fprintf(stderr, "\n ### ERROR: [OI] ID already in use.\n");
+            return -1;
+        }
+    }
+
     // Reader client.
     if (id > 0 && id < 1000) {
-        // Check if exist a client using the same id.
-        for (int i = 0; i < 10; i++) {
-            if (client_a[i].id == id) {
-                printf("\n ### ERROR: [OI] ID already in use.\n");
-                return -1;
-            }
-        }
         // Add new reader
         for (int i = 0; i < 10; i++) {
             if (client_a[i].id == -1) {
                 client_a[i].id = id;
                 client_a[i].fd = sockfd;
+
                 // Send back OI menssage.
-                send_msg(sockfd, msg);
+                send_message(sockfd, msg);
                 return 0;
             }
         }
-        printf("\n ### ERROR: [OI] Server full.\n");
+        fprintf(stderr, "\n ### ERROR: [OI] Server full.\n");
         return -1;
     }
 
@@ -177,18 +183,18 @@ int service_oi(struct msg_t msg, int sockfd) {
                 client_a[i].id = id;
                 client_a[i].fd = sockfd;
                 // Send back OI menssage.
-                if (send_msg(sockfd, msg) == -1){
+                if (send_message(sockfd, msg) == -1){
                     return -1;
                 } else {
                     return 0;
                 }
             }
         }
-        printf("\n ### ERROR: [OI] Server full.\n");
+        fprintf(stderr, "\n ### ERROR: [OI] Server full.\n");
         return -1;
     }
 
-    printf("\n ### ERROR: [OI] Incorrect ID.\n");
+    fprintf(stderr, "\n ### ERROR: [OI] Incorrect ID.\n");
 
     return -1;
 }
@@ -199,7 +205,7 @@ int service_oi(struct msg_t msg, int sockfd) {
  * @return Upon succesfull zero is returned. otherwise
  * a negative error.
  */
-int service_tchau(struct msg_t msg) {
+int service_tchau(struct msg_t msg, int sockfd) {
 
     int id = msg.orig_uid;
 
@@ -207,13 +213,13 @@ int service_tchau(struct msg_t msg) {
     if (id > 0 && id < 1000) {
         // Remove reader.
         for (int i = 0; i < 10; i++) {
-            if (client_a[i].id == id) {
+            if (client_a[i].id == id && client_a[i].fd == sockfd) {
                 client_a[i].id = -1;
-                return 0;
+                goto jp_tchaumsg;
             }
         }
-        printf("\n ### ERROR: [TCHAU] Reader not found.\n");
-        return -1;
+        fprintf(stderr, "\n ### NOTE: [TCHAU] Reader not registered.\n");
+        goto jp_tchaumsg;
     }
 
     // Sender client.
@@ -222,14 +228,24 @@ int service_tchau(struct msg_t msg) {
         for (int i = 10; i < 20; i++) {
             if (client_a[i].id == id) {
                 client_a[i].id = -1;
-                return 0;
+                goto jp_tchaumsg;
             }
         }
-        printf("\n ### ERROR: [TCHAU] Sender not found.\n");
-        return -1;
+        fprintf(stderr, "\n ### NOTE: [TCHAU] Sender not registered.\n");
+        goto jp_tchaumsg;
     }
 
-    return -1;
+jp_tchaumsg:
+    // Create tchau response message.
+    struct msg_t tchau_msg;
+    tchau_msg.type = TCHAU;
+    tchau_msg.orig_uid = 0;
+    tchau_msg.dest_uid = -1;
+    tchau_msg.text_len = 0;
+
+    send_message(sockfd, tchau_msg);
+
+    return 0;
 }
 
 /**
@@ -241,24 +257,29 @@ int service_tchau(struct msg_t msg) {
 int service_msg(struct msg_t msg) {
 
     int orig = msg.orig_uid;
+    int dest = msg.dest_uid;
 
-    /* Check if client is registered. */
+    // Check if dest is a sender.
+    if ((dest > 1000) || (dest < 0)) {
+        fprintf(stderr, "\n ### ERROR: [MSG] Client dest not is a reader.\n");
+        return -1;
+    }
+
+    // Check if client is registered.
     int aux = -1;
     for (int i = 10; i < 20; i++) {
         if (client_a[i].id == orig) {
             aux = 0;
             break;
         }
-    };
+    }
     if (aux == -1) {
-        printf("\n ### ERROR: [MSG] Client not registered.\n");
+        fprintf(stderr, "\n ### ERROR: [MSG] Sender not registered.\n");
         return -1;
     }
 
-    int dest = msg.dest_uid;
-
     // Send to only a dest.
-    if (dest > 0 && dest < 1999) {
+    if (dest > 0 && dest < 1000) {
         /* Get dest socket*/
         int dest_fd;
         aux = -1;
@@ -270,11 +291,11 @@ int service_msg(struct msg_t msg) {
             }
         }
         if (aux == -1) {
-            printf("\n ### ERROR: [MSG] Dest not found.\n");
+            fprintf(stderr, "\n ### ERROR: [MSG] Dest not found.\n");
             return -1;
         }
 
-        int ret = send_msg(dest_fd, msg);
+        int ret = send_message(dest_fd, msg);
         if (ret < 0) {
             return ret;
         }
@@ -282,11 +303,11 @@ int service_msg(struct msg_t msg) {
         return 0;
     }
 
-    // Send the menssage for all client connected.
+    // Send the message for all client connected.
     if (dest == 0) {
         for (int i = 0; i < 10; i++) {
             if (client_a[i].id > 0) {
-                int ret = send_msg(client_a[i].fd, msg);
+                int ret = send_message(client_a[i].fd, msg);
                 if (ret < 0) {
                     return ret;
                 }
@@ -295,7 +316,7 @@ int service_msg(struct msg_t msg) {
         return 0;
     }
     
-    printf("\n ### ERROR: [MSG] Bad.\n");
+    fprintf(stderr, "\n ### ERROR: [MSG] Bad.\n");
 
     return -1;
 }
@@ -324,29 +345,34 @@ int main(int argc, char *argv[])
     // Get port from args.
     ret = get_port(argc, argv, &port);
     if (ret < 0) {
-        return -1;
+        fprintf(stderr, "\n ### ERROR: Get port failed. errno = %i\n", errno);
+        exit(EXIT_FAILURE);
     }
 
     // Open a socket.
     int sockfd = open_socket();
     if (sockfd < 0) {
-        return -1;
+        fprintf(stderr, "\n ### ERROR: Open socket failed. errno = %i\n", errno);
+        exit(EXIT_FAILURE);
     }
 
-    printf("Socket = %i \n", sockfd);
+    fprintf(stdout, "Socket = %i \n", sockfd);
 
     // Naming the socket.
     ret = setaddr_socket(sockfd, port);
     if (ret < 0) {
-        return -1;
+        fprintf(stderr, "\n ### ERROR: Naming socket failed. errno = %i\n", errno);
+        exit(EXIT_FAILURE);
     }
 
     // Set listen to the socket.
     ret = listen_socket(sockfd);
     if (ret < 0) {
-        return -1;
+        fprintf(stderr, "\n ### ERROR: Listen failed. errno = %i\n", errno);
+        exit(EXIT_FAILURE);
     }
 
+    // Initialize set of file descriptors.
     FD_ZERO (&active_fd_set);
     FD_SET (sockfd, &active_fd_set);
 
@@ -355,8 +381,8 @@ int main(int argc, char *argv[])
 
         // Wait for a input from active sockets.
         if (select (FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
-            printf("\n ### ERROR: Select failed. errno = %i\n", errno);
-            return -1;
+            fprintf(stderr, "\n ### ERROR: Select failed. errno = %i\n", errno);
+            exit(EXIT_FAILURE);
         }
 
         // Service sockets with arrive data.
@@ -366,45 +392,41 @@ int main(int argc, char *argv[])
                 if (i == sockfd) {
                     int newsock = accept_connection(sockfd);
                     if (newsock < 0) {
-                        return -1;
+                        fprintf(stderr, "\n ### ERROR: Connection failed. errno = %i\n", errno);
+                    } else {
+                        fprintf(stdout, "Accept new connection - new socket = %i.\n", newsock);
+                        // Add new socket in active fd set.
+                        FD_SET(newsock, &active_fd_set);
                     }
-
-                    printf("Accept new connection - new socket = %i.\n", newsock);
-
-                    // Add new socket in active fd set.
-                    FD_SET(newsock, &active_fd_set);
                 } else {
-                    ret = receive_message(i, &msg);
-                    if (ret < 0) {
-                        return -1;
+                    // Receive incomming Message.
+                    if (receive_message(i, &msg) <= 0) {
+                        // Failled to receive message, disconnect client.
+                        goto jp_tchau;
                     }
-                    if (ret == 0) {
-                        msg.type = TCHAU;
-                    }
+
                     switch (msg.type) {
                         case OI:
-                            if (service_oi(msg, i) == -1) {
-                                ret = close_socket(i);
-                                if (ret < 0) {
-                                    return -1;
-                                }
-                                FD_CLR (i, &active_fd_set);
+                            if (service_oi(msg, i) < 0) {
+                                // If OI fail disconnect client.
+                                goto jp_tchau;
                             }
                             break;
                         case MSG:
-                            service_msg(msg);
+                            if (service_msg(msg) == -1) {
+                                // If MSG fail disconnect client.
+                                goto jp_tchau;
+                            }
                             break;
                         case TCHAU:
-                            service_tchau(msg);
-                            printf("Close connection socket: %i.\n", i); 
-                            ret = close_socket(i);
-                            if (ret < 0) {
-                                return -1;
-                            }
-                            FD_CLR (i, &active_fd_set);
+                            jp_tchau:
+                                service_tchau(msg, i);
+                                close_socket(i);
+                                FD_CLR (i, &active_fd_set);
+                                fprintf(stdout, "Close connection socket: %i.\n", i); 
                             break;
                         default:
-                            printf("\n ### Connection Error: Invalid menssage type.\n");
+                            fprintf(stderr, "\n ### Connection Error: Invalid menssage type.\n");
                     }
                 }
             }

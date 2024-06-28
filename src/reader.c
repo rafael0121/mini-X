@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    fprintf(stdout, "Socket = %i \n", sockfd);
+
     ret = connect_server(sockfd, port);
     if (ret < 0) {
         return -1;
@@ -51,13 +53,14 @@ int main(int argc, char *argv[])
         struct msg_t msg;
         msg.orig_uid = id;
 
-        receive_message(sockfd, &msg);
+        if (receive_message(sockfd, &msg) <= 0){
+            fprintf(stderr, "\n ### ERROR: Failed to receive mensage.\n");
+            return -1;
+        }
 
-        printf("Type: %i \n", msg.type);
-        printf("Orig_uid: %i \n", msg.orig_uid);
-        printf("Dest_uid: %i \n", msg.dest_uid);
-        printf("Text_len: %i \n", msg.text_len);
-        printf("Text: %s \n", msg.text);
+        printf("User: %i\n", msg.orig_uid);
+        printf("Message: %s \n", msg.text);
+
     }
 
     ret = close_socket(sockfd);

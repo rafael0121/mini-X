@@ -24,5 +24,5 @@
     extern int receive_message(int, struct msg_t *);
 
     // Send menssage.
-    extern int send_msg(int, struct msg_t);
+    extern int send_message(int, struct msg_t);
 #endif
