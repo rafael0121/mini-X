@@ -50,8 +50,6 @@ int main(int argc, char *argv[])
         fprintf(stdout, "===> Handshake Success \n");
     }
 
-    fprintf(stdout, "To exit type e and wait a incoming message.\n");
-
     while(1) {
         struct msg_t msg;
         msg.orig_uid = id;
@@ -70,14 +68,6 @@ int main(int argc, char *argv[])
         
         fprintf(stdout, "User: %i\n", msg.orig_uid);
         fprintf(stdout, "Message: %s \n", msg.text);
-
-        char c;
-        c = getchar();
-
-        // Exit loop
-        if (c == 'e') {
-            break;
-        }
     }
 
     // TCHAU Struct

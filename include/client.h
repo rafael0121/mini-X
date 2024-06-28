@@ -8,10 +8,10 @@
     // Help message.
     #define HELPCLIENT(argv)\
     { \
-        printf("\n"); \
-        printf("Usage:\n"); \
-        printf("  %s [1024 < PORT < 65536] [0 < ID]\n", argv); \
-        printf("  |  Execute Program\n\n"); \
+        fprintf(stdout, "\n"); \
+        fprintf(stdout, "Usage:\n"); \
+        fprintf(stdout, "  %s [1024 < PORT < 65536] [0 < ID]\n", argv); \
+        fprintf(stdout, "  |  Execute Program\n\n"); \
     } \
 
 /*============================================================================*
