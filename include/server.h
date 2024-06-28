@@ -8,6 +8,9 @@
     // Max clients waiting for accept connection.
     #define MAX_QUEUE 20
 
+    // Set time in seconds to send informations about the server.
+    #define TIME_INFO 60
+
 /*============================================================================*
  * Macros                                                                     *
  *============================================================================*/

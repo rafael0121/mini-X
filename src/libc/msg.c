@@ -21,7 +21,7 @@ int receive_message(int sockfd, struct msg_t *msg)
     int ret = read(sockfd, msg, length);
 
     if (ret < 0) {
-        fprintf(stderr, "\n ### ERROR: Failed to receive menssage. errno: %i \n", errno);
+        fprintf(stderr, "\n ### ERROR: Failed to receive message. errno: %i \n", errno);
         return -1;
     }
 

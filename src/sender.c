@@ -118,6 +118,14 @@ int main(int argc, char *argv[])
         }
     }
 
+    // TCHAU Struct
+    struct msg_t msg;
+    msg.type = TCHAU;
+    msg.orig_uid = id;
+    msg.dest_uid = 0;
+
+    send_message(sockfd, msg);
+
     ret = close_socket(sockfd);
     if (ret < 0) {
         return -1;

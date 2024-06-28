@@ -50,13 +50,15 @@ int main(int argc, char *argv[])
         fprintf(stdout, "===> Handshake Success \n");
     }
 
+    fprintf(stdout, "To exit type e and wait a incoming message.\n");
+
     while(1) {
         struct msg_t msg;
         msg.orig_uid = id;
 
         if (receive_message(sockfd, &msg) <= 0){
             fprintf(stderr, "\n ### ERROR: Failed to receive mensage.\n");
-            return -1;
+            break;
         }
 
         fprintf(stdout, "==============\n");
@@ -68,7 +70,23 @@ int main(int argc, char *argv[])
         
         fprintf(stdout, "User: %i\n", msg.orig_uid);
         fprintf(stdout, "Message: %s \n", msg.text);
+
+        char c;
+        c = getchar();
+
+        // Exit loop
+        if (c == 'e') {
+            break;
+        }
     }
+
+    // TCHAU Struct
+    struct msg_t msg;
+    msg.type = TCHAU;
+    msg.orig_uid = id;
+    msg.dest_uid = 0;
+
+    send_message(sockfd, msg);
 
     ret = close_socket(sockfd);
     if (ret < 0) {

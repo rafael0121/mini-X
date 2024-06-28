@@ -15,9 +15,16 @@
 #include <handlesocket.h>
 #include <server.h>
 #include <msg.h>
+#include <time.h>
 
 /*============================================================================*
- * Struct                                                                     *
+ * Global Variables                                                           *
+ *============================================================================*/
+
+int count_clients = 0;
+
+/*============================================================================*
+ * Structs                                                                    *
  *============================================================================*/
 
 struct {
@@ -170,8 +177,12 @@ int service_oi(struct msg_t msg, int sockfd) {
                 client_a[i].fd = sockfd;
 
                 // Send back OI message.
-                send_message(sockfd, msg);
-                return 0;
+                if (send_message(sockfd, msg) == -1){
+                    return -1;
+                } else {
+                    count_clients+=1;
+                    return 0;
+                }
             }
         }
         fprintf(stderr, "\n ### ERROR: [OI] Server full.\n");
@@ -189,6 +200,7 @@ int service_oi(struct msg_t msg, int sockfd) {
                 if (send_message(sockfd, msg) == -1){
                     return -1;
                 } else {
+                    count_clients+=1;
                     return 0;
                 }
             }
@@ -218,6 +230,7 @@ int service_tchau(struct msg_t msg, int sockfd) {
         for (int i = 0; i < 10; i++) {
             if (client_a[i].id == id && client_a[i].fd == sockfd) {
                 client_a[i].id = -1;
+                count_clients-=1;
                 goto jp_tchaumsg;
             }
         }
@@ -231,6 +244,7 @@ int service_tchau(struct msg_t msg, int sockfd) {
         for (int i = 10; i < 20; i++) {
             if (client_a[i].id == id && client_a[i].fd == sockfd) {
                 client_a[i].id = -1;
+                count_clients-=1;
                 goto jp_tchaumsg;
             }
         }
@@ -267,7 +281,6 @@ int service_msg(struct msg_t msg) {
         fprintf(stderr, "\n ### ERROR: [MSG] Client dest not is a reader.\n");
         return -1;
     }
-
     // Check if client is registered.
     int aux = -1;
     for (int i = 10; i < 20; i++) {
@@ -324,6 +337,51 @@ int service_msg(struct msg_t msg) {
     return -1;
 }
 
+/**
+ * @brief Check the time that has passed since the last check.
+ *
+ * @return Upon succesfull time passed is returned. otherwise
+ * a negative error.
+ */
+time_t check_time (time_t *last_time) {
+    time_t current_time; 
+
+    current_time = time(NULL);
+
+    return current_time - *last_time;;
+}
+
+/**
+ * @brief Send information about the server.
+ *
+ * @return Upon succesfull time passed is returned. otherwise
+ * a negative error.
+ */
+int send_infoserver(time_t start_time) {
+
+    struct msg_t msg;
+
+    long int uptime = time(NULL) - start_time; 
+
+    msg.type = MSG;
+    msg.orig_uid = 0;
+    msg.dest_uid = 0;
+    sprintf((char *) msg.text,
+            "Server info -> Connected Clients: %i, Up time: %li", count_clients, uptime);
+    msg.text_len = sizeof(msg.text);
+
+    // Send the message for all client connected.
+    for (int i = 0; i < 10; i++) {
+        if (client_a[i].id > 0) {
+            int ret = send_message(client_a[i].fd, msg);
+            if (ret < 0) {
+                return ret;
+            }
+        };
+    }
+    return 0;
+}
+
 /*============================================================================*
  * Main Function                                                              *
  *============================================================================*/
@@ -334,8 +392,8 @@ int main(int argc, char *argv[])
     int port = 0;
     struct msg_t msg;
 
-    // Ignore SIGPIPE
-    signal(SIGPIPE, SIG_IGN);
+    time_t start_time, last_time;
+    start_time = last_time = time(NULL);
 
     // Client array.
     for (int i = 0; i < 20; i++) {
@@ -382,10 +440,24 @@ int main(int argc, char *argv[])
     while (1) {
         read_fd_set = active_fd_set;
 
+        // Set select() timeout.
+        struct timeval timeout;
+        timeout.tv_sec = 1;
+        timeout.tv_usec = 0;
+
         // Wait for a input from active sockets.
-        if (select (FD_SETSIZE, &read_fd_set, NULL, NULL, NULL) < 0) {
+        if (select (FD_SETSIZE, &read_fd_set, NULL, NULL, &timeout) < 0) {
             fprintf(stderr, "\n ### ERROR: Select failed. errno = %i\n", errno);
             exit(EXIT_FAILURE);
+        }
+
+        // Send periodic messages.
+        if (check_time(&last_time) >= TIME_INFO) {
+            if(send_infoserver(start_time) < 0){
+                fprintf(stderr, "\n ### ERROR: Failed send inforserver. errno = %i\n", errno);
+                exit(EXIT_FAILURE);
+            };
+            last_time = time(NULL);
         }
 
         // Service sockets with arrive data.
