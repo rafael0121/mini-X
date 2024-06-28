@@ -59,9 +59,15 @@ int main(int argc, char *argv[])
             return -1;
         }
 
-        printf("User: %i\n", msg.orig_uid);
-        printf("Message: %s \n", msg.text);
-
+        fprintf(stdout, "==============\n");
+        if (msg.dest_uid == 0) {
+            fprintf(stdout, "Public Message\n");
+        } else {
+            fprintf(stdout, "Private Message\n");
+        }
+        
+        fprintf(stdout, "User: %i\n", msg.orig_uid);
+        fprintf(stdout, "Message: %s \n", msg.text);
     }
 
     ret = close_socket(sockfd);
