@@ -190,7 +190,7 @@ int service_oi(struct msg_t msg, int sockfd) {
     }
 
     // Sender client.
-    if (id > 1000 && id < 1999) {
+    if (id > 1000 && id < 2000) {
         // Add new sender
         for (int i = 10; i < 20; i++) {
             if (client_a[i].id == -1) {
@@ -227,32 +227,15 @@ int service_tchau(struct msg_t msg, int sockfd) {
     // Reader client.
     if (id > 0 && id < 1000) {
         // Remove reader.
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             if (client_a[i].id == id && client_a[i].fd == sockfd) {
                 client_a[i].id = -1;
                 count_clients-=1;
-                goto jp_tchaumsg;
             }
         }
-        fprintf(stderr, "\n ### NOTE: [TCHAU] Reader not registered.\n");
-        goto jp_tchaumsg;
+        fprintf(stderr, "\n ### NOTE: [TCHAU] Client not registered.\n");
     }
 
-    // Sender client.
-    if (id > 1000 && id < 1999) {
-        // Remove senders.
-        for (int i = 10; i < 20; i++) {
-            if (client_a[i].id == id && client_a[i].fd == sockfd) {
-                client_a[i].id = -1;
-                count_clients-=1;
-                goto jp_tchaumsg;
-            }
-        }
-        fprintf(stderr, "\n ### NOTE: [TCHAU] Sender not registered.\n");
-        goto jp_tchaumsg;
-    }
-
-jp_tchaumsg:
     // Create tchau response message.
     struct msg_t tchau_msg;
     tchau_msg.type = TCHAU;
