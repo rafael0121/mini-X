@@ -20,5 +20,8 @@
 # Binaries folder
 bin
 
+# Lib folder
+lib
+
 # Ctags
 *.ctags
