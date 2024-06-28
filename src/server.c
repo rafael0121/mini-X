@@ -167,7 +167,6 @@ int service_oi(struct msg_t msg, int sockfd) {
     msg.orig_uid = msg.dest_uid;
     msg.dest_uid = id;
 
-
     // Reader client.
     if (id > 0 && id < 1000) {
         // Add new reader
@@ -220,20 +219,15 @@ int service_oi(struct msg_t msg, int sockfd) {
  * @return Upon succesfull zero is returned. otherwise
  * a negative error.
  */
-int service_tchau(struct msg_t msg, int sockfd) {
+int service_tchau(int sockfd) {
 
-    int id = msg.orig_uid;
-
-    // Reader client.
-    if (id > 0 && id < 1000) {
-        // Remove reader.
-        for (int i = 0; i < 20; i++) {
-            if (client_a[i].id == id && client_a[i].fd == sockfd) {
-                client_a[i].id = -1;
-                count_clients-=1;
-            }
+    // Remove client.
+    for (int i = 0; i < 20; i++) {
+        if (client_a[i].fd == sockfd) {
+            client_a[i].id = -1;
+            client_a[i].fd = -1;
+            count_clients-=1;
         }
-        fprintf(stderr, "\n ### NOTE: [TCHAU] Client not registered.\n");
     }
 
     // Create tchau response message.
@@ -478,7 +472,7 @@ int main(int argc, char *argv[])
                             break;
                         case TCHAU:
                             jp_tchau:
-                                service_tchau(msg, i);
+                                service_tchau(i);
                                 close_socket(i);
                                 FD_CLR (i, &active_fd_set);
                                 fprintf(stdout, "Close connection socket: %i.\n", i); 
