@@ -1,11 +1,10 @@
 # mini-x
 
-## Description
+Este projeto apresenta um sistema de envio de *mensagens curtas*, desenvolvido como parte do Trabalho Prático 2, de Redes I. O sistema foi projetado sem utilização de bibliotecas especiais e escrito na Linguagem C. O programa servidor encaminha as mensagens para os clientes cadastrado no sistema e informa periodicamente aos programs de exibição informações sobre o número de clientes conectado e o UpTime. Existem 2 tipos de clientes, os de exibição das mensagens recebidas e um programa para envio de mensagens.
 
-Mini-x is a project for the Networks Discipline.
+## Autores
 
-The goal is implement 3 differents aplications:
-
-- Readers: Receive messages from the senders.
-- Senders: Send messages for one reader or all readers.
-- Server: Manage the messages flow and send information about the users connected, up time, etc.
+- Arthur Gonçalves Ayres Lanna [@ArthurLanna36](https://www.github.com/ArthurLanna36)
+- Arthur Oliveira Braga [@ArtilBr](https://www.github.com/ArtilBr)
+- Rafael Ramos de Andrade [@rafael0121](https://www.github.com/rafael0121)
+- Marcus Leandro Gomes Campos Oliveira [@Marcus305](https://www.github.com/Marcus305)
