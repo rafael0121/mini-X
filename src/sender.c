@@ -47,8 +47,8 @@ int menu(struct msg_t *msg) {
     }
 
     fprintf(stdout, "Type the message (max 140 char): ");
-    getchar();
-    if (fgets(text, 140, stdin) == NULL) {
+    text[0] = (char) getchar();
+    if (fgets(text + 1, 139, stdin) == NULL) {
         return -1;
     }
 
